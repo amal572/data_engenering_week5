@@ -59,9 +59,64 @@ then import it into your Jupiter notebook it helps you to find Pyspark:
 ```bash
 import findspark
 findspark.init()
-
 ```
+note: some issues in Windows to run Spark UI in port 4040 were solved by downloading winutils.exe for Hadoop and importing it in the bin folder in spark
 
+## Creating a Spark session
+We can use Spark with Python code using PySpark. We will be using Jupyter Notebooks for this lesson.
+
+We first need to import PySpark to our code:
+```bash
+import pyspark
+from pyspark.sql import SparkSession
+```
+We need to instantiate a Spark session, an object used to interact with Spark.
+```bash
+spark = SparkSession.builder \
+    .master("local[*]") \
+    .appName('test') \
+    .getOrCreate()
+```
+* SparkSession: is the class of the object that we instantiate. builder is the builder method.
+* master() sets the Spark master URL to connect to. The local string means that Spark will run on a local cluster. [*] means that Spark will run with as many CPU cores as possible.
+* appName() defines the name of our application/session. This will show in the Spark UI.
+* getOrCreate() will create the session or recover the object if it was previously created.
+  
+Once we've instantiated a session, we can access the Spark UI by browsing to localhost:4040. The UI will display all current jobs.
+
+## Reading CSV files
+Similar to Pandas, Spark can read CSV files into dataframes, a tabular data structure. Unlike Pandas, Spark can handle much bigger datasets but infer the datatypes of each column.
+Let's read the file and create a dataframe:
+```bash
+df = spark.read \
+    .option("header", "true") \
+    .csv('fhvhv_tripdata_2021-01.csv')
+```
+* read() reads the file.
+* option() contains options for the read method. In this case, we're specifying that the first line of the CSV file contains the column names.
+* csv() is for reading CSV files.
+You can see the contents of the dataframe with df.show() (only a few rows will be shown) or df.head(). You can also check the current schema with df.schema; you will notice that all values are strings.
+
+We can use a trick with Pandas to infer the datatypes:
+
+1. Create a smaller CSV file with the first 1000 records.
+2. Import Pandas and create a Pandas dataframe. This dataframe will have inferred datatypes.
+3. Create a Spark dataframe from the Pandas dataframe and check its schema
+```bash
+spark.createDataFrame(my_pandas_dataframe).schema
+```
+4. Based on the output of the previous method, import types from pyspark.sql and create a StructType containing a list of the datatypes.
+```bash
+from pyspark.sql import types
+schema = types.StructType([...])
+```
+5. Create a new Spark dataframe and include the schema as an option.
+```bash
+df = spark.read \
+    .option("header", "true") \
+    .schema(schema) \
+    .csv('fhvhv_tripdata_2021-01.csv')
+```
 
 
 
