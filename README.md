@@ -31,6 +31,37 @@ Spark can deal with both batches and streaming data. The technique for streaming
 
 ## Installing Spark for Windows
 
+first, install the Java Development Kit (JDK): Apache Spark requires Java. Make sure you have Java Development Kit (JDK) installed on your system. You can download and install it from the official Oracle website:
+```bash
+https://www.oracle.com/java/technologies/downloads/
+```
+second, Download Apache Spark:
+Go to the Apache Spark website: Apache Spark Downloads.
+```bash
+https://spark.apache.org/downloads.html
+```
+Select the latest stable version of Spark and download the pre-built version for Hadoop.
+Choose a version that matches your Hadoop version. If you don't have Hadoop installed, you can choose the version of the latest Hadoop (currently Hadoop 3.2).
+
+then, Extract Spark Archive:
+Extract the downloaded Spark archive to a directory on your system. For example, you can extract it to C:\spark.
+
+Set Environment Variables:
+Add SPARK_HOME to your system environment variables and set its value to the directory where you extracted Spark—for example, C:\spark.
+Add %SPARK_HOME%\bin to the PATH environment variable.
+
+Configure Hadoop:
+If you're using Spark with Hadoop, you may also need to configure Hadoop-related environment variables. Set HADOOP_HOME to the directory where Hadoop is installed, and add %HADOOP_HOME%\bin to the PATH.
+
+install findspark: pip install findspark
+
+then import it into your Jupiter notebook it helps you to find Pyspark: 
+```bash
+import findspark
+findspark.init()
+
+```
+
 
 
 
