@@ -308,3 +308,61 @@ def filter_outliers(row):
 
 rdd.filter(filter_outliers).take(1)
 ```
+
+## Spark and Docker
+we can run Sparks in the docker after downloading Spark and adding it to the control panel then in the docker file we can get the:
+```bash
+ENV PYTHONPATH="${SPARK_HOME}/python/lib/py4j-0.10.9.5-src.zip:${SPARK_HOME}/python:${PYTHONPATH}"
+ENV PATH="${HOME}/.local/bin:${PATH}"
+```
+then we have to make a docker-compose file to run the service (spark, spark-worker, jupyter):
+```bash
+version: '2'
+
+services:
+  spark:
+    #image: docker.io/bitnami/spark:3.3
+    build: 
+      context: .
+      dockerfile: Dockerfile    
+    environment:
+      - SPARK_MODE=master
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+    ports:
+      - '8080:8080'
+      - '4040:4040' # Spark master UI
+
+  spark-worker:
+    image: docker.io/bitnami/spark:3.3
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark:7077
+      - SPARK_WORKER_MEMORY=1G
+      - SPARK_WORKER_CORES=1
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+    ports:
+      - '8081:8081' # Spark worker UI
+
+  jupyter:
+    image: jupyter/pyspark-notebook
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+      - PYSPARK_PYTHON=python3
+      - PYSPARK_DRIVER_PYTHON=python3
+      - SPARK_MASTER=spark://spark:7077
+    volumes:
+      - "./:/home/jovyan/work"
+    ports:
+      - '8888:8888' # Jupyter Notebook
+    depends_on:
+      - spark
+
+```
+make sure that your version is the same as Spark version 3.3 or change it to your version 
+you can run jupyter in port 8888
