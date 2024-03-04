@@ -165,3 +165,46 @@ DataFrame operations in Spark fall into two categories: transformations and acti
 - `write()`: Writes the DataFrame to an external storage system.
 - `saveAsTable()`: Saves the DataFrame as a table in a database.
 - `take()`: Returns the first `n` rows from the DataFrame.
+
+## Functions and User-Defined Functions (UDFs)
+#### Functions:
+Built-in Functions: PySpark provides a wide range of built-in functions as part of its API. These functions are already implemented and optimized within the framework.
+
+Purpose: Built-in functions in PySpark are designed to perform common data processing tasks such as filtering, aggregation, sorting, and more. They are optimized for performance and scalability.
+
+Usage: Built-in functions can be directly used within DataFrame or RDD operations without requiring additional definition or registration. They are accessed through the PySpark API.
+
+#### User-Defined Functions (UDFs):
+Custom Functions: UDFs in PySpark are custom-defined functions created by users to extend the functionality of the framework beyond what is provided by built-in functions.
+
+Purpose: UDFs are used to apply custom logic or business rules to manipulate data within DataFrame operations. They allow users to perform specialized transformations or computations.
+
+Usage: UDFs need to be explicitly defined and registered with PySpark before they can be used. Once registered, they can be applied to DataFrame columns using the withColumn() method or within SQL queries using the registerFunction() method.
+
+#### Example:
+```bash
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import col, udf
+from pyspark.sql.types import IntegerType
+
+# Create a SparkSession
+spark = SparkSession.builder \
+    .appName("UDF Example") \
+    .getOrCreate()
+
+# Sample DataFrame
+df = spark.createDataFrame([(1, "John"), (2, "Alice"), (3, "Bob")], ["id", "name"])
+
+# Built-in function example
+df_filtered = df.filter(col("id") > 1)
+
+# User Defined Function (UDF) example
+def length_udf(name):
+    return len(name)
+
+length_udf = udf(length_udf, IntegerType())
+df_with_length = df.withColumn("name_length", length_udf(col("name")))
+
+df_filtered.show()
+df_with_length.show()
+```
