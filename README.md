@@ -227,5 +227,23 @@ GROUP BY
 """)
 ```
 ## Joins in Spark
+Joining tables in Spark is implemented in a similar way to GROUP BY and ORDER BY, but there are 2 distinct cases: joining 2 large tables and joining a large table and a small table.
 
+### Joining 2 large tables
+Let's assume that we've created a df_yellow_revenue dataframe in the same manner as the df_green_revenue we created in the previous section. We want to join both tables, so we will create temporary dataframes with changed column names so that we can tell apart data from each original table:
+```bash
+df_green_revenue_tmp = df_green_revenue \
+    .withColumnRenamed('amount', 'green_amount') \
+    .withColumnRenamed('number_records', 'green_number_records')
 
+df_yellow_revenue_tmp = df_yellow_revenue \
+    .withColumnRenamed('amount', 'yellow_amount') \
+    .withColumnRenamed('number_records', 'yellow_number_records')
+```
+We will now perform an outer join so that we can display the amount of trips and revenue per hour per zone for green and yellow taxis at the same time regardless of whether the hour/zone combo had one type of taxi trips or the other:
+```bash
+df_join = df_green_revenue_tmp.join(df_yellow_revenue_tmp, on=['hour', 'zone'], how='outer')
+```
+on= receives a list of columns by which we will join the tables. This will result in a primary composite key for the resulting table.
+how= specifies the type of JOIN to execute.
+When we run either show() or write() on this query, Spark will have to create both the temporary dataframes and the joint final dataframe
