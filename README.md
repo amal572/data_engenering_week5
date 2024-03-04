@@ -119,4 +119,49 @@ df = spark.read \
 ```
 
 
+## Partitions
 
+In PySpark, partitions refer to the division of a dataset into smaller, more manageable chunks for processing. When you load data into a PySpark DataFrame or RDD (Resilient Distributed Dataset), it is divided into partitions, with each partition representing a subset of the data. These partitions are distributed across the nodes in a Spark cluster.
+
+```bash
+# create 24 partitions in our dataframe
+df = df.repartition(24)
+# parquetize and write to fhvhv/2021/01/ folder
+df.write.parquet('fhvhv/2021/01/')
+```
+
+Trying to write the files again will output an error because Spark will not write to a non-empty folder. You can force an overwrite with the mode argument:
+```bash
+df.write.parquet('fhvhv/2021/01/', mode='overwrite')
+```
+
+## Spark DataFrame
+
+DataFrame operations in Spark fall into two categories: transformations and actions.
+
+- **Transformations:** These are lazily evaluated operations that create a new DataFrame from an existing one without triggering any Spark jobs. Examples include `select()`, `filter()`, `groupBy()`, and `orderBy()`.
+
+- **Actions:** Actions are eager operations that trigger the execution of previously defined transformations and return a result to the driver program. Examples include `show()`, `count()`, `collect()`, and `write()`.
+
+## Common Operations
+
+### Transformations
+
+- `select()`: Selects a subset of columns from the DataFrame.
+- `filter()`: Filters rows based on a given condition.
+- `groupBy()`: Groups the DataFrame rows by a given column.
+- `orderBy()`: Sorts the DataFrame based on one or more columns.
+- `withColumn()`: Adds a new column to the DataFrame or replaces an existing one.
+- `drop()`: Drops specified columns from the DataFrame.
+- `join()`: Performs a join operation between two DataFrames.
+- `groupBy().agg()`: Performs aggregation operations after grouping.
+- `distinct()`: Returns distinct rows from the DataFrame.
+
+### Actions
+
+- `show()`: Displays the content of the DataFrame in a tabular format.
+- `count()`: Returns the number of rows in the DataFrame.
+- `collect()`: Retrieves all data from the DataFrame to the driver program.
+- `write()`: Writes the DataFrame to an external storage system.
+- `saveAsTable()`: Saves the DataFrame as a table in a database.
+- `take()`: Returns the first `n` rows from the DataFrame.
