@@ -247,3 +247,64 @@ df_join = df_green_revenue_tmp.join(df_yellow_revenue_tmp, on=['hour', 'zone'], 
 on= receives a list of columns by which we will join the tables. This will result in a primary composite key for the resulting table.
 how= specifies the type of JOIN to execute.
 When we run either show() or write() on this query, Spark will have to create both the temporary dataframes and the joint final dataframe
+
+### Joining a large table and a small table
+Let's now use the zones lookup table to match each zone ID to its corresponding name.
+```bash
+df_zones = spark.read.parquet('zones/')
+
+df_result = df_join.join(df_zones, df_join.zone == df_zones.LocationID)
+
+df_result.drop('LocationID', 'zone').write.parquet('tmp/revenue-zones')
+```
+he default join type in Spark SQL is the inner join.
+Because we renamed the LocationID in the joint table to zone, we can't simply specify the columns to join and we need to provide a condition as criteria.
+We use the drop() method to get rid of the extra columns we don't need anymore, because we only want to keep the zone names and both LocationID and zone are duplicate columns with numeral ID's only.
+We also use write() instead of show() because show() might not process all of the data.
+
+## Resilient Distributed Datasets (RDDs)
+RDD is a distributed collection of elements that can be operated on in parallel. It is the following properties
+
+Resilient - Fault-tolerant with the help of RDD lineage graph [DAG] and so able to recompute missing or damaged partitions due to node failures.
+Lazy evaluated - Data inside RDD is not available or transformed until an action triggers the execution.
+Cacheablec - All the data can be hold in a persistent “storage” like memory (default and the most preferred) or disk (the least preferred due to access speed).
+Immutable or Read-Only - It does not change once created and can only be transformed using transformations to new RDDs.
+
+### From Dataframe to RDD
+Resilient Distributed Datasets (RDDs) are a fundamental data structure in Apache Spark that represent immutable, distributed collections of objects.
+
+implement how to convert from dataframe to RDD
+```bash
+SELECT 
+    date_trunc('hour', lpep_pickup_datetime) AS hour, 
+    PULocationID AS zone,
+
+    SUM(total_amount) AS amount,
+    COUNT(1) AS number_records
+FROM
+    green
+WHERE
+    lpep_pickup_datetime >= '2020-01-01 00:00:00'
+GROUP BY
+    1, 2
+```
+We can re-implement the SELECT section by choosing the 3 fields from the RDD's rows.
+```bash
+rdd = df_green \
+    .select('lpep_pickup_datetime', 'PULocationID', 'total_amount') \
+    .rdd
+```
+We can implement the WHERE section by using the filter() and take() methods:
+
+filter() returns a new RDD cointaining only the elements that satisfy a predicate, which in our case is a function that we pass as a parameter.
+take() takes as many elements from the RDD as stated.
+```bash
+from datetime import datetime
+
+start = datetime(year=2020, month=1, day=1)
+
+def filter_outliers(row):
+    return row.lpep_pickup_datetime >= start
+
+rdd.filter(filter_outliers).take(1)
+```
