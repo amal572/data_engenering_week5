@@ -208,3 +208,24 @@ df_with_length = df.withColumn("name_length", length_udf(col("name")))
 df_filtered.show()
 df_with_length.show()
 ```
+## GROUP BY in Spark
+Let's do the following query:
+```bash
+df_green_revenue = spark.sql("""
+SELECT 
+    date_trunc('hour', lpep_pickup_datetime) AS hour, 
+    PULocationID AS zone,
+
+    SUM(total_amount) AS amount,
+    COUNT(1) AS number_records
+FROM
+    green
+WHERE
+    lpep_pickup_datetime >= '2020-01-01 00:00:00'
+GROUP BY
+    1, 2  
+""")
+```
+## Joins in Spark
+
+
